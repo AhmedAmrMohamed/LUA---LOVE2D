@@ -217,7 +217,7 @@ function checkloss()
 		-- love.event.quit()
 	end	
 end 
-function poweup(dt)
+function poweup(dt) -- Not yet functional
 	powerTimer =  powerTimer - 1*dt
 	if(powerTimer <0  ) then
 		activePower.xpos   = love.math.random(0,500)
@@ -227,7 +227,7 @@ function poweup(dt)
 		powerTimer         = maxPowerTimer
 	end
 end
-function movePoewr(dt)
+function movePoewr(dt) -- Not yet functional
 	activePower.ypos = activePower.ypos + bspeed*dt
 	if(activePower.pos > screenheight) then 
 		active.power  = false
