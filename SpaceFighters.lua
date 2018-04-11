@@ -11,7 +11,7 @@ hpimg=nil
 playerCanShoot = true
 enemyCanShoot = true
 ShootTimerMax = 0.3
-
+paused =false
 playerTimer = ShootTimerMax
 enemyTimer = ShootTimerMax
 bspeed=500
@@ -20,18 +20,26 @@ screenwidth=nil
 screenheight=nil
 accidenttimermax = 3.0
 accidenttimer = accidenttimermax
+pauseimage= nil
+largeFont = nil
 
 function love.load()
-	enemy.img=love.graphics.newImage('l0_Plane3.png')
-	player.img=love.graphics.newImage('l0_Plane2.png')
-	bulletimg = love.graphics.newImage('images/rocket_flame/rocket_1_0012.png')
-	screenwidth = love.graphics.getWidth()
-	screenheight = love.graphics.getHeight()
+	pauseimage   =love.graphics.newImage('pause.png')
+	enemy.img    =love.graphics.newImage('l0_Plane3.png')
+	player.img   =love.graphics.newImage('l0_Plane2.png')
+	bulletimg    =love.graphics.newImage('images/rocket_flame/rocket_1_0012.png')
+	screenwidth  =love.graphics.getWidth()
+	screenheight =love.graphics.getHeight()
+	largeFont    =love.graphics.newFont(50)
 end
 function love.draw()
 	-- love.graphics.clear(40,45,52,225)
-	love.graphics.print('Enemy '..enemy.health,10,10)
-	love.graphics.print('Player '..player.health,10,40)
+	love.graphics.print('Hold Enter to show controls.',10,5)
+	if paused then
+		love.graphics.printf("Controls\n WASD --> Move Enemy\n arrows --> move player\nSpace --> enemy Shoot\nCtrl --> player shoot\n ESC -->Quit",125,screenheight/2,500,"center")
+	end
+	love.graphics.print('Enemy '..enemy.health,10,25)
+	love.graphics.print('Player '..player.health,10,45)
 	love.graphics.draw(player.img,player.x,player.y)
 	love.graphics.draw(enemy.img,enemy.x,enemy.y)
 	for i,bullet in ipairs(playerBullets) do
@@ -52,46 +60,53 @@ function love.update(dt)
 	-- createEneimes(dt)
 	-- moveEneimes(dt)
 	-- fireMaking(dt)
-	if love.keyboard.isDown('escape') then
-		love.event.push('quit')
-		
+	if love.keyboard.isDown('return') then
+		paused = true
+	else
+		paused=false 
 	end
-	if love.keyboard.isDown('left')  and valid(player,'l') then
-			player.x = player.x - dt*player.speed
-	
-	elseif love.keyboard.isDown('right') and valid(player,'r')  then		
-			player.x = player.x + dt*player.speed
-	
-	elseif love.keyboard.isDown('down') and valid(player,'d') then
-			player.y=player.y+dt*player.speed
-	elseif love.keyboard.isDown('up') and valid(player,'u') then
-			player.y=player.y-dt*player.speed
-	end
-	if love.keyboard.isDown('pagedown') then
-		if playerCanShoot then
-		bullet = {y=player.y,x=player.x+player.img:getWidth()/2-7,img=bulletimg,speed=bspeed}
-		table.insert(playerBullets,bullet)
-		playerCanShoot=false
-		playerTimer=ShootTimerMax		
+	if not paused then
+		if love.keyboard.isDown('escape') then
+			love.event.push('quit')
+			
 		end
-	end
-	if love.keyboard.isDown('a')  and valid(enemy,'l') then
-			enemy.x = enemy.x - dt*enemy.speed
-	
-	elseif love.keyboard.isDown('d') and valid(enemy,'r')  then		
-			enemy.x = enemy.x + dt*enemy.speed
-	
-	elseif love.keyboard.isDown('s') and valid(enemy,'d') then
-			enemy.y=enemy.y+dt*enemy.speed
-	elseif love.keyboard.isDown('w') and valid(enemy,'u') then
-			enemy.y=enemy.y-dt*enemy.speed
-	end
-	if love.keyboard.isDown('space') then
-		if enemyCanShoot then
-		bullet = {y=enemy.y+10,x=enemy.x+enemy.img:getWidth()/2-4,img=bulletimg,speed=bspeed}
-		table.insert(enemyBullets,bullet)
-		enemyCanShoot =	 false
-		enemyTimer    =  ShootTimerMax		
+		if love.keyboard.isDown('left')  and valid(player,'l') then
+				player.x = player.x - dt*player.speed
+		
+		elseif love.keyboard.isDown('right') and valid(player,'r')  then		
+				player.x = player.x + dt*player.speed
+		
+		elseif love.keyboard.isDown('down') and valid(player,'d') then
+				player.y=player.y+dt*player.speed
+		elseif love.keyboard.isDown('up') and valid(player,'u') then
+				player.y=player.y-dt*player.speed
+		end
+		if love.keyboard.isDown('rctrl') then
+			if playerCanShoot then
+			bullet = {y=player.y,x=player.x+player.img:getWidth()/2-7,img=bulletimg,speed=bspeed}
+			table.insert(playerBullets,bullet)
+			playerCanShoot=false
+			playerTimer=ShootTimerMax		
+			end
+		end
+		if love.keyboard.isDown('a')  and valid(enemy,'l') then
+				enemy.x = enemy.x - dt*enemy.speed
+		
+		elseif love.keyboard.isDown('d') and valid(enemy,'r')  then		
+				enemy.x = enemy.x + dt*enemy.speed
+		
+		elseif love.keyboard.isDown('s') and valid(enemy,'d') then
+				enemy.y=enemy.y+dt*enemy.speed
+		elseif love.keyboard.isDown('w') and valid(enemy,'u') then
+				enemy.y=enemy.y-dt*enemy.speed
+		end
+		if love.keyboard.isDown('space') then
+			if enemyCanShoot then
+			bullet = {y=enemy.y+10,x=enemy.x+enemy.img:getWidth()/2-4,img=bulletimg,speed=bspeed}
+			table.insert(enemyBullets,bullet)
+			enemyCanShoot =	 false
+			enemyTimer    =  ShootTimerMax		
+			end
 		end
 	end
 end
@@ -217,4 +232,7 @@ function movePoewr(dt)
 	if(activePower.pos > screenheight) then 
 		active.power  = false
 	end
+end
+function showHelp()
+	love.graphics.print("Paused",255,50)
 end
