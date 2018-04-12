@@ -1,36 +1,43 @@
 player ={x=255 ,y=500, speed = 400 ,img =nil,health=100,power=nil}
-enemy={x=255 ,y=50, speed = 400 ,img =nil,health=100,power=nil}
+enemy  ={x=255 ,y=50, speed = 400 ,img =nil,health=100,power=nil}
+--bullets
 playerBullets ={}
-enemyBullets = {}
-activePower = {xpos = nil,ypos = nil,active=false,name = nil,img=nil}
-powerups = {'hp'}
-powerNo = 1
-powertimer = 5
-bulletimg=nil
-hpimg=nil
+enemyBullets  ={}
+bulletimg     =nil
 playerCanShoot = true
 enemyCanShoot = true
 ShootTimerMax = 0.3
-paused =false
 playerTimer = ShootTimerMax
 enemyTimer = ShootTimerMax
 bspeed=500
-time=0
-screenwidth=nil
-screenheight=nil
+--power ups
+activePower = {xpos = nil,ypos = nil,active=false,name = nil,img=nil}
+powerups = {'hp'}
+powerNo = 1
+powerTimer = 3
+hpimg=nil
+maxPowerTimer = 10
+--accidents
 accidenttimermax = 3.0
+time=0
 accidenttimer = accidenttimermax
-pauseimage= nil
+
+screenwidth=nil
+paused =false
+screenheight=nil
+-- pauseimage= bulletimg
 largeFont = nil
 
 function love.load()
-	pauseimage   =love.graphics.newImage('pause.png')
-	enemy.img    =love.graphics.newImage('l0_Plane3.png')
-	player.img   =love.graphics.newImage('l0_Plane2.png')
-	bulletimg    =love.graphics.newImage('images/rocket_flame/rocket_1_0012.png')
+
+	hpimg        =love.graphics.newImage('assets/2.png')
+	enemy.img    =love.graphics.newImage('assets/l0_Plane3.png')
+	player.img   =love.graphics.newImage('assets/l0_Plane2.png')
+	bulletimg    =love.graphics.newImage('assets/images/rocket_flame/rocket_1_0012.png')
 	screenwidth  =love.graphics.getWidth()
 	screenheight =love.graphics.getHeight()
 	largeFont    =love.graphics.newFont(50)
+	math.randomseed(os.time())
 end
 function love.draw()
 	-- love.graphics.clear(40,45,52,225)
@@ -48,8 +55,8 @@ function love.draw()
 	for i,bullet in ipairs(enemyBullets) do
 		love.graphics.draw(bulletimg,bullet.x,bullet.y)
 	end
-	if activePower.active then
-		love.graphics.draw(activePower.img,activePower.xpos,activePowe.ypos)
+	if activePower.active then 
+		love.graphics.draw(activePower.img,activePower.xpos,activePower.ypos)
 	end
 end
 function love.update(dt)
@@ -57,6 +64,10 @@ function love.update(dt)
 	markCollision(dt)
 	shootingtempo(dt)
 	moveBullets(dt)
+	powerup(dt)
+	if activePower.active then
+		movePoewr(dt)
+	end
 	-- createEneimes(dt)
 	-- moveEneimes(dt)
 	-- fireMaking(dt)
@@ -182,8 +193,9 @@ function markCollision(dt)
 	pw=player.img:getWidth()
 	ex=enemy.x
 	ey=enemy.y
+	marg=10
 	eh=enemy.img:getHeight()
-	ew=enemy.img:getWidth()
+	ew=enemy.img:getWidth() 
 	bh=bulletimg:getHeight()
 	bw=bulletimg:getWidth()
 	for i,bullet in ipairs(enemyBullets) do
@@ -198,12 +210,22 @@ function markCollision(dt)
 			table.remove(playerBullets,i)			
 		end
 	end
-	if CheckCollision(px,py,pw,ph,ex,ey,ew,ey) and accidenttimer<0 then
-		player.health=player.health-30
-		enemy.health =enemy.health-30
+	if CheckCollision(px,py,pw,ph,ex,ey,ew,eh) and accidenttimer<0 then
+		player.health = player.health - 30
+		enemy.health  = enemy.health  - 30
 		accidenttimer = accidenttimermax
 	end
-
+	if activePower.active then
+		h = activePower.img:getHeight()
+		w = activePower.img:getWidth()
+		if CheckCollision(px,py,pw,ph,activePower.xpos,activePower.ypos,w,h) then
+			player.health      = math.min(player.health+50,100)
+			activePower.active = false
+		elseif CheckCollision(ex,ey,ew,eh,activePower.xpos,activePower.ypos,w,h) then
+			enemy.health       = math.min(enemy.health+50,100)
+			activePower.active = false
+		end
+	end	
 end
 function checkloss()
 	if(player.health<=0) then
@@ -217,20 +239,23 @@ function checkloss()
 		-- love.event.quit()
 	end	
 end 
-function poweup(dt) -- Not yet functional
+function powerup(dt)
 	powerTimer =  powerTimer - 1*dt
 	if(powerTimer <0  ) then
-		activePower.xpos   = love.math.random(0,500)
-		activePower.name   = love.math.random(0,powerNo)
+		activePower.ypos   = math.random(0,500)
+		activePower.name   = math.random(0,powerNo)
 		activePower.active = true
 		activePower.img    = hpimg
 		powerTimer         = maxPowerTimer
+		activePower.xpos   = -5
+
+
 	end
 end
-function movePoewr(dt) -- Not yet functional
-	activePower.ypos = activePower.ypos + bspeed*dt
-	if(activePower.pos > screenheight) then 
-		active.power  = false
+function movePoewr(dt)
+	activePower.xpos  = activePower.xpos + bspeed*dt
+	if(activePower.xpos> screenwidth) then 
+		activePower.active  = false
 	end
 end
 function showHelp()
